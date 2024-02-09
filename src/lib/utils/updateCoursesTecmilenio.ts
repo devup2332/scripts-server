@@ -15,6 +15,9 @@ import { INSERT_NEW_MODULE } from '../graphql/mutations/modules/insetNewModule';
 import { INSERT_NEW_LESSON } from '../graphql/mutations/lessons/insertNewLesson';
 import { GET_QUESTIONS_PER_LESSON } from '../graphql/queries/questions/getQuestionsPerLesson';
 import { IQuestion } from 'src/models/question';
+import { UPDATE_QUESTION_PER_ID } from '../graphql/mutations/questions/updateQuestion';
+import { INSERT_NEW_QUESTION } from '../graphql/mutations/questions/insertNewQuestion';
+import { DELETING_QUESTION_PER_ID } from '../graphql/mutations/questions/deletingQuestion';
 
 export const updateCoursesTecmilenio = async () => {
   console.log(`=====> Getting Initial Data`);
@@ -113,7 +116,6 @@ export const updateCoursesTecmilenio = async () => {
         delete lessonBase.lesson_fb;
         delete lessonBase.module_id;
         delete lessonBase.client_id;
-        delete lessonBase.created_at;
         await graphqlClientLernit.request(UPDATE_LESSON_BY_ID, {
           lessonId: lMP.lesson_fb,
           newInfo: {
@@ -123,7 +125,7 @@ export const updateCoursesTecmilenio = async () => {
           },
         });
         // Updating Questions per lesson
-        console.log(`====> Getting Questions`);
+        console.log(`====> Fetching questions per lesson`);
         const { questions: questionsBase }: { questions: IQuestion[] } =
           await graphqlClientLernit.request(GET_QUESTIONS_PER_LESSON, {
             lessonId: lessonBase.lesson_fb,
@@ -131,10 +133,42 @@ export const updateCoursesTecmilenio = async () => {
 
         const { questions: questionsMP }: { questions: IQuestion[] } =
           await graphqlClientLernit.request(GET_QUESTIONS_PER_LESSON, {
-            lessonId: lessonBase.lesson_fb,
+            lessonId: lMP.lesson_fb,
           });
-        // if (questionsBase.length) {
-        // }
+        if (questionsBase.length) {
+          for (const qBase of questionsBase) {
+            const qMP = questionsMP.find((qmp) => qmp.text === qBase.text);
+            if (qMP) {
+              delete qBase.lesson_fb;
+              delete qBase.question_fb;
+              await graphqlClientLernit.request(UPDATE_QUESTION_PER_ID, {
+                questionId: qMP.question_fb,
+                questionInfo: { ...qBase },
+              });
+            } else {
+              const newQuestionId = makeIdFb();
+              await graphqlClientLernit.request(INSERT_NEW_QUESTION, {
+                questionInfo: {
+                  ...qBase,
+                  lesson_fb: lMP.lesson_fb,
+                  question_fb: newQuestionId,
+                },
+              });
+            }
+          }
+          // Deleting question that not were found
+          const { questions: questionsMPUpdated }: { questions: IQuestion[] } =
+            await graphqlClientLernit.request(GET_QUESTIONS_PER_LESSON, {
+              lessonId: lMP.lesson_fb,
+            });
+          for (const q of questionsMPUpdated) {
+            const qf = questionsBase.find((qB) => qB.text === q.text);
+            if (!qf)
+              await graphqlClientLernit.request(DELETING_QUESTION_PER_ID, {
+                questionId: q.question_fb,
+              });
+          }
+        }
       } else {
         const newId = makeIdFb();
         await graphqlClientLernit.request(INSERT_NEW_LESSON, {
@@ -146,6 +180,23 @@ export const updateCoursesTecmilenio = async () => {
             client_id: 'content',
           },
         });
+        console.log(`====> Fetching questions per lesson`);
+        const { questions: questionsBase }: { questions: IQuestion[] } =
+          await graphqlClientLernit.request(GET_QUESTIONS_PER_LESSON, {
+            lessonId: lessonBase.lesson_fb,
+          });
+        if (questionsBase.length) {
+          for (const qBase of questionsBase) {
+            const newQuestionId = makeIdFb();
+            await graphqlClientLernit.request(INSERT_NEW_QUESTION, {
+              questionInfo: {
+                ...qBase,
+                lesson_fb: newId,
+                question_fb: newQuestionId,
+              },
+            });
+          }
+        }
       }
     }
 
