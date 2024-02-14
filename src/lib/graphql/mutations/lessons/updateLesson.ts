@@ -5,7 +5,7 @@ export const UPDATE_LESSON_BY_ID = gql`
     $lessonId: String
     $newInfo: lessons_cl_set_input!
   ) {
-    update_lessons_cl_(
+    update_lessons_cl(
       where: { lesson_fb: { _eq: $lessonId } }
       _set: $newInfo
     ) {

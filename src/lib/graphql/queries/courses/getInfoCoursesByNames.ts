@@ -7,6 +7,7 @@ export const GET_INFO_COURSES_BY_NAMES = gql`
       where: {
         name: { _in: $names }
         stage: { _gte: 7 }
+        client_id: { _in: ["content", "demo", "team"] }
         is_deleted: { _eq: false }
       }
     ) {

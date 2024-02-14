@@ -10,14 +10,8 @@ import { GET_MODULES_PER_COURSE } from '../graphql/queries/modules/getModulesPer
 import { IModule } from 'src/models/module';
 import { UPDATE_MODULE_PER_ID } from '../graphql/mutations/modules/updateModulesPerId';
 import { makeIdFb } from './makeIdFb';
-import { UPDATE_LESSON_BY_ID } from '../graphql/mutations/lessons/updateLesson';
 import { INSERT_NEW_MODULE } from '../graphql/mutations/modules/insetNewModule';
-import { INSERT_NEW_LESSON } from '../graphql/mutations/lessons/insertNewLesson';
-import { GET_QUESTIONS_PER_LESSON } from '../graphql/queries/questions/getQuestionsPerLesson';
-import { IQuestion } from 'src/models/question';
-import { UPDATE_QUESTION_PER_ID } from '../graphql/mutations/questions/updateQuestion';
-import { INSERT_NEW_QUESTION } from '../graphql/mutations/questions/insertNewQuestion';
-import { DELETING_QUESTION_PER_ID } from '../graphql/mutations/questions/deletingQuestion';
+import { upsertLessonsTecmilenioForExistenModule } from './upsertLessonsTecmilenio';
 
 export const updateCoursesTecmilenio = async () => {
   console.log(`=====> Getting Initial Data`);
@@ -50,8 +44,8 @@ export const updateCoursesTecmilenio = async () => {
     delete allData.origin;
     delete allData.client_id;
 
-    const response = await graphqlClientLernit.request(UPDATE_COURSE_INFO, {
-      courseId: course,
+    await graphqlClientLernit.request(UPDATE_COURSE_INFO, {
+      courseId: f.course_fb,
       newInfo: allData,
     });
     console.log(`====> Getting lessons`);
@@ -59,13 +53,12 @@ export const updateCoursesTecmilenio = async () => {
       await graphqlClientLernit.request(GET_LESSONS_BY_COURSE, {
         courseId: course.course_fb,
       });
-    const courseMP = coursesMP.find((c) => c.name === course.name);
     const { lessons: lessonsCourseMP }: { lessons: ILesson[] } =
       await graphqlClientLernit.request(GET_LESSONS_BY_COURSE, {
-        courseId: courseMP.course_fb,
+        courseId: f.course_fb,
       });
 
-    console.log(`===> Getting Modules`);
+    console.log(`===> Getting Modules - ${course.course_fb}`);
     const { modules: modulesBase }: { modules: IModule[] } =
       await graphqlClientLernit.request(GET_MODULES_PER_COURSE, {
         courseId: course.course_fb,
@@ -78,125 +71,30 @@ export const updateCoursesTecmilenio = async () => {
 
     // Updating or craeting Modules
     for (const mcb of modulesBase) {
-      const mMP = modulesCourseMP.find((mcmp) => mcmp.name === mcb.name);
+      console.log(`====> Updating or creating module ${mcb.name}`);
+      const mMP = modulesCourseMP.find(
+        (mcmp) =>
+          mcmp.name === mcb.name && mcmp.description === mcb.description,
+      );
       if (mMP) {
-        delete mcb.course_fb;
-        delete mcb.module_fb;
+        const copyModule = { ...mcb };
+        delete copyModule.course_fb;
+        delete copyModule.module_fb;
         await graphqlClientLernit.request(UPDATE_MODULE_PER_ID, {
           moduleFb: mMP.module_fb,
           moduleInfo: {
-            ...mcb,
-            deleted_at: mcb.deleted ? new Date().toISOString() : null,
+            ...copyModule,
+            deleted_at: copyModule.deleted ? new Date().toISOString() : null,
           },
         });
+        await upsertLessonsTecmilenioForExistenModule(course, f, mcb, mMP);
       } else {
         const newId = makeIdFb();
-        await graphqlClientLernit.request(INSERT_NEW_MODULE, {
-          moduleInfo: { ...mcb, module_fb: newId, course_fb: f.course_fb },
-        });
-      }
-    }
-    // Getting again modules recently created or updated
-    const { modules: modulesRecentlyCreated }: { modules: IModule[] } =
-      await graphqlClientLernit.request(GET_MODULES_PER_COURSE, {
-        courseId: f.course_fb,
-      });
-
-    // Updating or creating Lessons
-    for (const lessonBase of lessonsBase) {
-      const lMP = lessonsCourseMP.find((lcmp) => lcmp.name === lessonBase.name);
-      const mBase = modulesBase.find(
-        (mb) => mb.module_fb === lessonBase.module_id,
-      );
-      const mFound = modulesRecentlyCreated.find(
-        (mcmp) => mcmp.name === mBase.name,
-      );
-      if (lMP) {
-        delete lessonBase.course_fb;
-        delete lessonBase.lesson_fb;
-        delete lessonBase.module_id;
-        delete lessonBase.client_id;
-        await graphqlClientLernit.request(UPDATE_LESSON_BY_ID, {
-          lessonId: lMP.lesson_fb,
-          newInfo: {
-            ...lessonBase,
-            module_id: mFound.module_fb,
-            deleted_at: lessonBase.is_deleted ? new Date().toISOString() : null,
-          },
-        });
-        // Updating Questions per lesson
-        console.log(`====> Fetching questions per lesson`);
-        const { questions: questionsBase }: { questions: IQuestion[] } =
-          await graphqlClientLernit.request(GET_QUESTIONS_PER_LESSON, {
-            lessonId: lessonBase.lesson_fb,
+        const { module }: { module: IModule } =
+          await graphqlClientLernit.request(INSERT_NEW_MODULE, {
+            moduleInfo: { ...mcb, module_fb: newId, course_fb: f.course_fb },
           });
-
-        const { questions: questionsMP }: { questions: IQuestion[] } =
-          await graphqlClientLernit.request(GET_QUESTIONS_PER_LESSON, {
-            lessonId: lMP.lesson_fb,
-          });
-        if (questionsBase.length) {
-          for (const qBase of questionsBase) {
-            const qMP = questionsMP.find((qmp) => qmp.text === qBase.text);
-            if (qMP) {
-              delete qBase.lesson_fb;
-              delete qBase.question_fb;
-              await graphqlClientLernit.request(UPDATE_QUESTION_PER_ID, {
-                questionId: qMP.question_fb,
-                questionInfo: { ...qBase },
-              });
-            } else {
-              const newQuestionId = makeIdFb();
-              await graphqlClientLernit.request(INSERT_NEW_QUESTION, {
-                questionInfo: {
-                  ...qBase,
-                  lesson_fb: lMP.lesson_fb,
-                  question_fb: newQuestionId,
-                },
-              });
-            }
-          }
-          // Deleting question that not were found
-          const { questions: questionsMPUpdated }: { questions: IQuestion[] } =
-            await graphqlClientLernit.request(GET_QUESTIONS_PER_LESSON, {
-              lessonId: lMP.lesson_fb,
-            });
-          for (const q of questionsMPUpdated) {
-            const qf = questionsBase.find((qB) => qB.text === q.text);
-            if (!qf)
-              await graphqlClientLernit.request(DELETING_QUESTION_PER_ID, {
-                questionId: q.question_fb,
-              });
-          }
-        }
-      } else {
-        const newId = makeIdFb();
-        await graphqlClientLernit.request(INSERT_NEW_LESSON, {
-          lessonInfo: {
-            ...lessonBase,
-            course_fb: f.course_fb,
-            lesson_fb: newId,
-            module_id: mFound.module_fb,
-            client_id: 'content',
-          },
-        });
-        console.log(`====> Fetching questions per lesson`);
-        const { questions: questionsBase }: { questions: IQuestion[] } =
-          await graphqlClientLernit.request(GET_QUESTIONS_PER_LESSON, {
-            lessonId: lessonBase.lesson_fb,
-          });
-        if (questionsBase.length) {
-          for (const qBase of questionsBase) {
-            const newQuestionId = makeIdFb();
-            await graphqlClientLernit.request(INSERT_NEW_QUESTION, {
-              questionInfo: {
-                ...qBase,
-                lesson_fb: newId,
-                question_fb: newQuestionId,
-              },
-            });
-          }
-        }
+        await upsertLessonsTecmilenioForExistenModule(course, f, mcb, module);
       }
     }
 
