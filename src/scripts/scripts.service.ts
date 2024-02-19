@@ -4,6 +4,7 @@ import { GET_CLIENT_INFO } from 'src/lib/graphql/queries/clients/getClientInfo';
 import { IClient } from 'src/models/client';
 import { downloadCoursesMPToAnInstance } from 'src/lib/utils/downloadCoursesMPToAnInstance';
 import { updateCoursesTecmilenio } from 'src/lib/utils/updateCoursesTecmilenio';
+import { getReportOfCoursesPerInstance } from 'src/lib/utils/getReportOfCoursesPerInstance';
 
 @Injectable()
 export class ScriptsService {
@@ -30,6 +31,14 @@ export class ScriptsService {
       status: 200,
       type: 'UpdateAndCreateTecmilenioCourses',
       respose: [],
+    };
+  }
+
+  async getReportOfCoursesPerInstance(clientId: string) {
+    const response = await getReportOfCoursesPerInstance(clientId);
+    return {
+      response,
+      status: 200,
     };
   }
 }

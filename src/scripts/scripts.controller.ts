@@ -25,4 +25,8 @@ export class ScriptsController {
   async updateAndCreateTecmilenioCourses() {
     return this._scriptSrv.updateAndCreateTecmilenioCourses();
   }
+  @Get('script3/:clientId')
+  async getReportOfCoursesPerInstance(@Param('clientId') clientId: string) {
+    return this._scriptSrv.getReportOfCoursesPerInstance(clientId);
+  }
 }

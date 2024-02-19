@@ -28,8 +28,10 @@ export const upsertLessonsTecmilenioForExistenModule = async (
       courseId: f.course_fb,
       moduleId: mMP.module_fb,
     });
+
   for (const lessonBase of lessonsModule) {
-    console.log(`====> Updating lesson ${lessonBase.name}`);
+    console.log(`\n----- Updating lesson ${lessonBase.name}`);
+
     if (lessonBase.name === 'Foro general del curso') continue;
     const lMP = lessonsCourseMP.find(
       (lcmp) =>
@@ -37,7 +39,7 @@ export const upsertLessonsTecmilenioForExistenModule = async (
         lcmp.description === lessonBase.description,
     );
     if (lMP) {
-      console.log(`====> Lesson found`);
+      console.log(`!!!!!! Lesson found`);
       const newLessonData = { ...lessonBase };
       delete newLessonData.course_fb;
       delete newLessonData.lesson_fb;
@@ -53,7 +55,6 @@ export const upsertLessonsTecmilenioForExistenModule = async (
       });
 
       // Updating Questions per lesson
-      console.log(`====> Fetching questions per lesson`);
       const { questions: questionsBase }: { questions: IQuestion[] } =
         await graphqlClientLernit.request(GET_QUESTIONS_PER_LESSON, {
           lessonId: lessonBase.lesson_fb,
@@ -98,7 +99,7 @@ export const upsertLessonsTecmilenioForExistenModule = async (
         }
       }
     } else {
-      console.log(`====> Lesson not found`);
+      console.log(`!!!!!! Lesson not found`);
       const newId = makeIdFb();
       await graphqlClientLernit.request(INSERT_NEW_LESSON, {
         lessonInfo: {
@@ -109,13 +110,13 @@ export const upsertLessonsTecmilenioForExistenModule = async (
           client_id: 'content',
         },
       });
-      console.log(`====> Fetching questions per lesson`);
       const { questions: questionsBase }: { questions: IQuestion[] } =
         await graphqlClientLernit.request(GET_QUESTIONS_PER_LESSON, {
           lessonId: lessonBase.lesson_fb,
         });
       if (questionsBase.length) {
         for (const qBase of questionsBase) {
+          console.log(`------ Updating question`);
           const newQuestionId = makeIdFb();
           await graphqlClientLernit.request(INSERT_NEW_QUESTION, {
             questionInfo: {

@@ -8,6 +8,7 @@ export const GET_COURSES_TECMILENIO_IN_MP = gql`
         client_id: { _eq: "content" }
         stage: { _gte: 7 }
         origin: { _eq: "tecmilenio" }
+        course_fb: { _eq: "E9luUI9fFNEW4cTeYGk7" }
         is_deleted: { _eq: false }
       }
     ) {
