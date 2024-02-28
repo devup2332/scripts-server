@@ -3,13 +3,13 @@ import graphqlClientLernit from '../graphql/client';
 import { GET_INFO_COURSES_BY_INSTANCE } from '../graphql/queries/courses/getInfoCoursesByInstance';
 import { GET_COURSES_TECMILENIO_IN_MP } from '../graphql/queries/courses/getCoursesTecmilenioInMP';
 import { UPDATE_COURSE_INFO } from '../graphql/mutations/courses/update_courses_cl';
-import { sleep } from './sleep';
+import { sleep } from './methods/sleep';
 import { GET_LESSONS_BY_COURSE } from '../graphql/queries/lessons/getLessonsByCourse';
 import { ILesson } from 'src/models/lesson';
 import { GET_MODULES_PER_COURSE } from '../graphql/queries/modules/getModulesPerCourse';
 import { IModule } from 'src/models/module';
 import { UPDATE_MODULE_PER_ID } from '../graphql/mutations/modules/updateModulesPerId';
-import { makeIdFb } from './makeIdFb';
+import { makeIdFb } from './methods/makeIdFb';
 import { INSERT_NEW_MODULE } from '../graphql/mutations/modules/insetNewModule';
 import { upsertLessonsTecmilenioForExistenModule } from './upsertLessonsTecmilenio';
 

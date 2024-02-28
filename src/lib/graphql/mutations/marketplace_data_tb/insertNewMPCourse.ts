@@ -1,7 +1,7 @@
 import { gql } from 'graphql-request';
 
-export const INSERT_MP_COURSE_INTO_AN_INSTANCE = gql`
-  mutation INSERT_MP_COURSE_INTO_AN_INSTANCE(
+export const UPSERT_MP_COURSE_INTO_AN_INSTANCE = gql`
+  mutation UPSERT_MP_COURSE_INTO_AN_INSTANCE(
     $object: marketplace_data_tb_insert_input!
   ) {
     insert_marketplace_data_tb_one(

@@ -1,4 +1,5 @@
 export interface IClient {
   name: string;
-  id: string;
+  client_fb: string;
+  hasTecmilenioCatalog: boolean;
 }

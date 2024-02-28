@@ -7,7 +7,7 @@ import { UPDATE_LESSON_BY_ID } from '../graphql/mutations/lessons/updateLesson';
 import { IQuestion } from 'src/models/question';
 import { GET_QUESTIONS_PER_LESSON } from '../graphql/queries/questions/getQuestionsPerLesson';
 import { UPDATE_QUESTION_PER_ID } from '../graphql/mutations/questions/updateQuestion';
-import { makeIdFb } from './makeIdFb';
+import { makeIdFb } from './methods/makeIdFb';
 import { INSERT_NEW_QUESTION } from '../graphql/mutations/questions/insertNewQuestion';
 import { DELETING_QUESTION_PER_ID } from '../graphql/mutations/questions/deletingQuestion';
 import { INSERT_NEW_LESSON } from '../graphql/mutations/lessons/insertNewLesson';

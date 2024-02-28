@@ -29,4 +29,9 @@ export class ScriptsController {
   async getReportOfCoursesPerInstance(@Param('clientId') clientId: string) {
     return this._scriptSrv.getReportOfCoursesPerInstance(clientId);
   }
+
+  @Get('reportExcel/reportMPCourses')
+  async getReportOfAllCoursesMP() {
+    return this._scriptSrv.getReportOfAllCoursesMP();
+  }
 }

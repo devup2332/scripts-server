@@ -5,6 +5,7 @@ import { IClient } from 'src/models/client';
 import { downloadCoursesMPToAnInstance } from 'src/lib/utils/downloadCoursesMPToAnInstance';
 import { updateCoursesTecmilenio } from 'src/lib/utils/updateCoursesTecmilenio';
 import { getReportOfCoursesPerInstance } from 'src/lib/utils/getReportOfCoursesPerInstance';
+import { getReportOfCoursesMPperInstance } from 'src/lib/utils/getReportOfCoursesMPperInstance';
 
 @Injectable()
 export class ScriptsService {
@@ -39,6 +40,14 @@ export class ScriptsService {
     return {
       response,
       status: 200,
+    };
+  }
+
+  async getReportOfAllCoursesMP() {
+    const response = await getReportOfCoursesMPperInstance();
+    return {
+      status: 200,
+      response,
     };
   }
 }
