@@ -1,3 +1,5 @@
+import { IModule } from './module';
+
 export interface ICourse {
   name: string;
   course_fb: string;
@@ -7,8 +9,8 @@ export interface ICourse {
   topic_id: string;
   image_url: string;
   type: string;
-  min_core: string;
-  min_rogress: string;
+  min_score: number;
+  min_progress: number;
   competencies_json: string[];
   ous_json: string[];
   created_by_json: object;
@@ -40,4 +42,5 @@ export interface ICourse {
   dc4_data_json: object;
   dynamic_end_days: number;
   external_url: string;
+  modules: IModule[];
 }
