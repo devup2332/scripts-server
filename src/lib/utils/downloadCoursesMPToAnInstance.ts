@@ -105,13 +105,13 @@ export const downloadCoursesMPToAnInstance = async (clientId: string) => {
         course_fb: course.course_fb,
         client_fb: clientId,
         competencies_levels: competenciesLevels,
-        privacity: 'private',
+        privacity: 'public',
         lesson_privacy: false,
         min_score: 80,
         min_progress: 100,
-        restart_time: 24,
+        restart_time: 36,
         available_in_client: true,
-        welcome_message: '¡Bienvenid@, esperamos que este curso sea de gran aporte a tu crecimiento profesional!',
+        welcome_message: '¡Te damos la bienvenida a tu curso!',
       };
     } else {
       object = {
@@ -119,13 +119,13 @@ export const downloadCoursesMPToAnInstance = async (clientId: string) => {
         course_fb: course.course_fb,
         client_fb: clientId,
         competencies_levels: competenciesLevels,
-        privacity: 'private',
+        privacity: 'public',
         lesson_privacy: false,
         min_score: 80,
         min_progress: 100,
-        restart_time: 24,
+        restart_time: 36,
         available_in_client: true,
-        welcome_message: '¡Bienvenid@, esperamos que este curso sea de gran aporte a tu crecimiento profesional!',
+        welcome_message: '¡Te damos la bienvenida a tu curso!',
       };
     }
     console.log({ object });
